@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.0",
-    "@napi-rs/canvas-darwin-arm64": "1.0.0",
     "convex": "^1.36.1",
     "next": "16.2.4",
     "react": "^19.2.5",
@@ -32,6 +31,11 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "@tailwindcss/oxide"
-    ]
+    ],
+    "supportedArchitectures": {
+      "os": ["darwin", "linux"],
+      "cpu": ["arm64", "x64"],
+      "libc": ["glibc"]
+    }
   }
 }
