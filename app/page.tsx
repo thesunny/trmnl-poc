@@ -37,6 +37,8 @@ export default async function Home() {
                 ? {
                     temperature: weather.current.temperature_2m,
                     code: weather.current.weather_code,
+                    dailyMax: weather.daily.temperature_2m_max[0],
+                    dailyMin: weather.daily.temperature_2m_min[0],
                   }
                 : undefined
             }

@@ -4,6 +4,8 @@ export const WIDTH = 800;
 export const HEIGHT = 480;
 
 const BLACK = "#000000";
+const DARK_GRAY = "#555555";
+const LIGHT_GRAY = "#aaaaaa";
 const WHITE = "#ffffff";
 
 export const ICON_ATLAS_URL = "/weather-icons.png";
@@ -25,6 +27,8 @@ const ICON_GRID: Record<IconType, { col: number; row: number }> = {
 export type SceneWeather = {
   temperature: number;
   code: number;
+  dailyMax: number;
+  dailyMin: number;
 };
 
 export function drawScene(
@@ -40,13 +44,20 @@ export function drawScene(
   if (weather) {
     drawWeatherIcon(
       ctx,
-      130,
-      topCenterY,
-      200,
+      185,
+      140,
+      240,
       weatherCodeToIcon(weather.code),
       atlas,
     );
-    drawTemperature(ctx, 480, topCenterY, weather.temperature);
+    drawTemperature(ctx, 600, 170, weather.temperature);
+
+    ctx.fillStyle = DARK_GRAY;
+    ctx.font = "46px 'Atkinson Hyperlegible'";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${Math.round(weather.dailyMax)}°`, 680, 130);
+    ctx.fillText(`${Math.round(weather.dailyMin)}°`, 680, 200);
   } else {
     ctx.fillStyle = BLACK;
     ctx.font = "20px 'Atkinson Hyperlegible'";
@@ -54,19 +65,26 @@ export function drawScene(
     ctx.textBaseline = "middle";
     ctx.fillText("Weather unavailable", WIDTH / 2, topCenterY);
   }
+
+  ctx.strokeStyle = LIGHT_GRAY;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(10, 320);
+  ctx.lineTo(790, 320);
+  ctx.stroke();
 }
 
 function drawTemperature(
   ctx: CanvasRenderingContext2D,
-  cx: number,
+  rightX: number,
   cy: number,
   value: number,
 ): void {
   ctx.fillStyle = BLACK;
-  ctx.font = "bold 130px 'Atkinson Hyperlegible'";
-  ctx.textAlign = "center";
+  ctx.font = "150px 'Atkinson Hyperlegible'";
+  ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  ctx.fillText(`${Math.round(value)}°`, cx, cy);
+  ctx.fillText(`${Math.round(value)}°`, rightX, cy);
 }
 
 export function drawWeatherIcon(

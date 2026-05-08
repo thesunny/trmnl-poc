@@ -39,6 +39,8 @@ async function renderPixels(): Promise<Uint8Array> {
       ? {
           temperature: weather.current.temperature_2m,
           code: weather.current.weather_code,
+          dailyMax: weather.daily.temperature_2m_max[0],
+          dailyMin: weather.daily.temperature_2m_min[0],
         }
       : undefined,
     atlas as unknown as CanvasImageSource,
