@@ -39,14 +39,14 @@ export function drawScene(
 
   if (weather) {
     drawWeatherIcon(ctx, 185, 140, 240, weather.code, atlas);
-    drawTemperature(ctx, 600, 170, weather.temperature);
+    drawTemperature(ctx, 600, 150, weather.temperature);
 
     ctx.fillStyle = DARK_GRAY;
     ctx.font = "46px 'Atkinson Hyperlegible'";
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${Math.round(weather.dailyMax)}°`, 680, 130);
-    ctx.fillText(`${Math.round(weather.dailyMin)}°`, 680, 200);
+    ctx.fillText(`${Math.round(weather.dailyMax)}°`, 680, 110);
+    ctx.fillText(`${Math.round(weather.dailyMin)}°`, 680, 180);
   } else {
     ctx.fillStyle = BLACK;
     ctx.font = "20px 'Atkinson Hyperlegible'";
