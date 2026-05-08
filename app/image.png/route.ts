@@ -50,8 +50,8 @@ async function renderPixels(): Promise<Uint8Array> {
   const out = new Uint8Array(WIDTH * HEIGHT);
   for (let i = 0, p = 0; i < data.length; i += 4, p++) {
     const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    const v = Math.floor(lum / 64);
-    out[p] = v > 3 ? 3 : v;
+    const v = Math.floor(lum / 16);
+    out[p] = v > 15 ? 15 : v;
   }
   return out;
 }
@@ -87,19 +87,19 @@ function chunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
-function encode2BitGrayPNG(
+function encode4BitGrayPNG(
   width: number,
   height: number,
   pixels: Uint8Array,
 ): Buffer {
-  const bytesPerRow = Math.ceil(width / 4);
+  const bytesPerRow = Math.ceil(width / 2);
   const filtered = new Uint8Array((bytesPerRow + 1) * height);
   for (let y = 0; y < height; y++) {
     const rowStart = y * (bytesPerRow + 1);
     filtered[rowStart] = 0; // filter: None
     for (let x = 0; x < width; x++) {
-      const v = pixels[y * width + x] & 0x3;
-      filtered[rowStart + 1 + (x >> 2)] |= v << (6 - 2 * (x & 3));
+      const v = pixels[y * width + x] & 0xf;
+      filtered[rowStart + 1 + (x >> 1)] |= v << ((x & 1) === 0 ? 4 : 0);
     }
   }
 
@@ -109,7 +109,7 @@ function encode2BitGrayPNG(
   const dv = new DataView(ihdr.buffer);
   dv.setUint32(0, width);
   dv.setUint32(4, height);
-  ihdr[8] = 2; // bit depth
+  ihdr[8] = 4; // bit depth
   ihdr[9] = 0; // color type: grayscale
   ihdr[10] = 0; // compression
   ihdr[11] = 0; // filter
@@ -125,7 +125,7 @@ function encode2BitGrayPNG(
 
 export async function GET() {
   const pixels = await renderPixels();
-  const png = encode2BitGrayPNG(WIDTH, HEIGHT, pixels);
+  const png = encode4BitGrayPNG(WIDTH, HEIGHT, pixels);
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
