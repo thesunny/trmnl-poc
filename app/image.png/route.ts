@@ -1,9 +1,22 @@
-import { createCanvas } from "@napi-rs/canvas";
+import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
 import { deflateSync } from "node:zlib";
+import path from "node:path";
 import { drawScene, WIDTH, HEIGHT } from "../scene";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+for (const file of [
+  "AtkinsonHyperlegible-Regular.ttf",
+  "AtkinsonHyperlegible-Italic.ttf",
+  "AtkinsonHyperlegible-Bold.ttf",
+  "AtkinsonHyperlegible-BoldItalic.ttf",
+]) {
+  GlobalFonts.registerFromPath(
+    path.join(process.cwd(), "public/fonts", file),
+    "Atkinson Hyperlegible",
+  );
+}
 
 function renderPixels(): Uint8Array {
   const canvas = createCanvas(WIDTH, HEIGHT);

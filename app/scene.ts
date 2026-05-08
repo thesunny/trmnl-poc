@@ -83,8 +83,12 @@ export function drawScene(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
 
   ctx.fillStyle = BLACK;
-  ctx.font = "bold 34px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("Planet and Moon", WIDTH / 2, HEIGHT - 32);
+
+  ctx.font = "bold 34px 'Atkinson Hyperlegible'";
+  ctx.fillText("Planet and Moon", WIDTH / 2, HEIGHT - 60);
+
+  ctx.font = "20px 'Atkinson Hyperlegible'";
+  ctx.fillText("A celestial scene", WIDTH / 2, HEIGHT - 28);
 }
