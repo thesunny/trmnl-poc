@@ -58,8 +58,8 @@ export function drawScene(
   ctx.strokeStyle = LIGHT_GRAY;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(20, 300);
-  ctx.lineTo(780, 300);
+  ctx.moveTo(20, 290);
+  ctx.lineTo(780, 290);
   ctx.stroke();
 
   if (weather) {
