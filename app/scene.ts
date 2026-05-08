@@ -1,4 +1,8 @@
-import { weatherCodeToIcon, type IconType } from "./weather";
+import {
+  weatherCodeToIcon,
+  type ForecastDay,
+  type IconType,
+} from "./weather";
 
 export const WIDTH = 800;
 export const HEIGHT = 480;
@@ -29,6 +33,7 @@ export type SceneWeather = {
   code: number;
   dailyMax: number;
   dailyMin: number;
+  forecast: ForecastDay[];
 };
 
 export function drawScene(
@@ -72,6 +77,49 @@ export function drawScene(
   ctx.moveTo(20, 300);
   ctx.lineTo(780, 300);
   ctx.stroke();
+
+  if (weather) {
+    drawForecastRow(ctx, weather.forecast, atlas);
+  }
+}
+
+function drawForecastRow(
+  ctx: CanvasRenderingContext2D,
+  forecast: ForecastDay[],
+  atlas: CanvasImageSource,
+): void {
+  const colWidth = WIDTH / 7;
+  const labelY = 325;
+  const iconCenterY = 390;
+  const iconSize = 70;
+  const tempY = 450;
+
+  ctx.fillStyle = BLACK;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  forecast.forEach((day, i) => {
+    const cx = (i + 0.5) * colWidth;
+
+    ctx.font = "16px 'Atkinson Hyperlegible'";
+    ctx.fillText(day.label, cx, labelY);
+
+    drawWeatherIcon(
+      ctx,
+      cx,
+      iconCenterY,
+      iconSize,
+      weatherCodeToIcon(day.code),
+      atlas,
+    );
+
+    ctx.font = "20px 'Atkinson Hyperlegible'";
+    ctx.fillText(
+      `${Math.round(day.min)}°—${Math.round(day.max)}°`,
+      cx,
+      tempY,
+    );
+  });
 }
 
 function drawTemperature(

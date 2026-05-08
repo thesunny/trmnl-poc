@@ -43,8 +43,10 @@ export type WeatherResponse = {
     wind_direction_10m: number;
   };
   daily: {
+    time: string[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
+    weather_code: number[];
   };
   current_units: {
     temperature_2m: string;
@@ -53,13 +55,41 @@ export type WeatherResponse = {
   };
 };
 
+export type ForecastDay = {
+  label: string;
+  code: number;
+  min: number;
+  max: number;
+};
+
+export function buildForecast(weather: WeatherResponse): ForecastDay[] {
+  const out: ForecastDay[] = [];
+  for (let i = 1; i <= 7; i++) {
+    const dateStr = weather.daily.time[i];
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    const label =
+      i === 1
+        ? "Tomorrow"
+        : date.toLocaleDateString("en-US", { weekday: "long" });
+    out.push({
+      label,
+      code: weather.daily.weather_code[i],
+      min: weather.daily.temperature_2m_min[i],
+      max: weather.daily.temperature_2m_max[i],
+    });
+  }
+  return out;
+}
+
 export async function fetchWeather(): Promise<WeatherResponse | null> {
   const params = new URLSearchParams({
     latitude: String(LAT),
     longitude: String(LON),
     current:
       "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m",
-    daily: "temperature_2m_max,temperature_2m_min",
+    daily: "temperature_2m_max,temperature_2m_min,weather_code",
+    forecast_days: "8",
     timezone: "auto",
   });
   try {

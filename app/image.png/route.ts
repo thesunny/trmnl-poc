@@ -2,7 +2,7 @@ import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
 import { drawScene, WIDTH, HEIGHT } from "../scene";
-import { fetchWeather } from "../weather";
+import { buildForecast, fetchWeather } from "../weather";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,6 +41,7 @@ async function renderPixels(): Promise<Uint8Array> {
           code: weather.current.weather_code,
           dailyMax: weather.daily.temperature_2m_max[0],
           dailyMin: weather.daily.temperature_2m_min[0],
+          forecast: buildForecast(weather),
         }
       : undefined,
     atlas as unknown as CanvasImageSource,

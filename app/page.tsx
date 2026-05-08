@@ -7,6 +7,7 @@ import {
   LAT,
   LON,
   WEATHER_DESCRIPTIONS,
+  buildForecast,
   fetchWeather,
 } from "./weather";
 
@@ -39,6 +40,7 @@ export default async function Home() {
                     code: weather.current.weather_code,
                     dailyMax: weather.daily.temperature_2m_max[0],
                     dailyMin: weather.daily.temperature_2m_min[0],
+                    forecast: buildForecast(weather),
                   }
                 : undefined
             }
