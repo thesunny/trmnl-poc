@@ -1,5 +1,6 @@
 import { SceneCanvas } from "./SceneCanvas";
 import { WeatherIconPreview } from "./WeatherIconPreview";
+import { ConditionsProvider } from "./ConditionsContext";
 import { WIDTH, HEIGHT } from "./scene";
 import {
   LAT,
@@ -23,15 +24,16 @@ export default async function Home() {
   ]);
 
   return (
-    <main
-      style={{
-        padding: 24,
-        display: "flex",
-        flexDirection: "row",
-        gap: 24,
-        alignItems: "flex-start",
-      }}
-    >
+    <ConditionsProvider>
+      <main
+        style={{
+          padding: 24,
+          display: "flex",
+          flexDirection: "row",
+          gap: 24,
+          alignItems: "flex-start",
+        }}
+      >
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <section>
           <h2 style={{ margin: "0 0 8px" }}>Source canvas (full color)</h2>
@@ -193,6 +195,7 @@ export default async function Home() {
           </div>
         </aside>
       </div>
-    </main>
+      </main>
+    </ConditionsProvider>
   );
 }

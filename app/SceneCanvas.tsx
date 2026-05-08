@@ -8,6 +8,7 @@ import {
   ICON_ATLAS_URL,
   type SceneWeather,
 } from "./scene";
+import { useConditions } from "./ConditionsContext";
 
 const FONT_FACES = [
   { weight: "400", style: "normal", file: "AtkinsonHyperlegible-Regular.ttf" },
@@ -22,6 +23,7 @@ const FONT_FACES = [
 
 export function SceneCanvas({ weather }: { weather?: SceneWeather }) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const { override } = useConditions();
 
   useEffect(() => {
     let cancelled = false;
@@ -47,13 +49,26 @@ export function SceneCanvas({ weather }: { weather?: SceneWeather }) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      drawScene(ctx, weather, atlas);
+
+      const effective: SceneWeather | undefined =
+        weather && override !== null
+          ? {
+              ...weather,
+              code: override,
+              forecast: weather.forecast.map((d) => ({
+                ...d,
+                code: override,
+              })),
+            }
+          : weather;
+
+      drawScene(ctx, effective, atlas);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [weather]);
+  }, [weather, override]);
 
   return (
     <canvas
