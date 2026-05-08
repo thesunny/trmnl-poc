@@ -2,7 +2,7 @@ import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
 import { drawScene, WIDTH, HEIGHT } from "../scene";
-import { buildForecast, fetchWeather } from "../weather";
+import { buildForecast, fetchWeatherFresh } from "../weather";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +30,10 @@ function loadAtlas() {
 }
 
 async function renderPixels(): Promise<Uint8Array> {
-  const [weather, atlas] = await Promise.all([fetchWeather(), loadAtlas()]);
+  const [weather, atlas] = await Promise.all([
+    fetchWeatherFresh(),
+    loadAtlas(),
+  ]);
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext("2d");
   drawScene(

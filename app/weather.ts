@@ -92,7 +92,9 @@ export function buildForecast(weather: WeatherResponse): ForecastDay[] {
   return out;
 }
 
-export async function fetchWeather(): Promise<WeatherResponse | null> {
+async function fetchWeatherWith(
+  init: RequestInit,
+): Promise<WeatherResponse | null> {
   const params = new URLSearchParams({
     latitude: String(LAT),
     longitude: String(LON),
@@ -105,13 +107,32 @@ export async function fetchWeather(): Promise<WeatherResponse | null> {
   try {
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?${params}`,
-      { next: { revalidate: 600 } },
+      init,
     );
     if (!res.ok) return null;
     return (await res.json()) as WeatherResponse;
   } catch {
     return null;
   }
+}
+
+// Cached fetch (10-minute revalidate) used by the home page.
+// The home page is a development preview, so we want it to render fast on
+// each reload without hammering Open-Meteo. Being a few minutes stale is
+// fine here — nobody's making real decisions from the dev preview.
+export function fetchWeather(): Promise<WeatherResponse | null> {
+  return fetchWeatherWith({ next: { revalidate: 600 } });
+}
+
+// Uncached fetch used by /image.png, the device-facing endpoint.
+// The TRMNL device polls every 10 min and is the only client hitting the
+// route, so under Next's stale-while-revalidate cache the image would
+// always be one poll cycle (~10 min) behind: each poll would serve the
+// previous fetch's data while triggering a background refresh that the
+// next poll would consume. Bypassing the cache here means the rendered
+// image always reflects the current weather at the moment of the poll.
+export function fetchWeatherFresh(): Promise<WeatherResponse | null> {
+  return fetchWeatherWith({ cache: "no-store" });
 }
 
 // Order matches the layout of public/27-weather-icons.png (left-to-right, top-to-bottom).
