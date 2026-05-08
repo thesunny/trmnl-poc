@@ -104,42 +104,11 @@ export async function fetchWeather(): Promise<WeatherResponse | null> {
   }
 }
 
-export type IconType =
-  | "sun"
-  | "partly-cloudy"
-  | "cloud"
-  | "rain"
-  | "snow"
-  | "thunderstorm"
-  | "fog";
-
-export const ALL_ICON_TYPES: IconType[] = [
-  "sun",
-  "partly-cloudy",
-  "cloud",
-  "rain",
-  "snow",
-  "thunderstorm",
-  "fog",
+// Order matches the layout of public/27-weather-icons.png (left-to-right, top-to-bottom).
+export const WEATHER_CODES = [
+  0, 1, 2, 3, 45, 48,
+  51, 53, 55, 56, 57, 61,
+  63, 65, 66, 67, 71, 73,
+  75, 77, 80, 81, 82, 85,
+  86, 95, 96, 99,
 ];
-
-export const ICON_LABELS: Record<IconType, string> = {
-  sun: "Clear",
-  "partly-cloudy": "Partly cloudy",
-  cloud: "Cloudy",
-  rain: "Rain",
-  snow: "Snow",
-  thunderstorm: "Thunderstorm",
-  fog: "Fog",
-};
-
-export function weatherCodeToIcon(code: number): IconType {
-  if (code === 0) return "sun";
-  if (code === 1 || code === 2) return "partly-cloudy";
-  if (code === 3) return "cloud";
-  if (code === 45 || code === 48) return "fog";
-  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
-  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow";
-  if (code >= 95 && code <= 99) return "thunderstorm";
-  return "cloud";
-}

@@ -2,10 +2,9 @@ import { SceneCanvas } from "./SceneCanvas";
 import { WeatherIconPreview } from "./WeatherIconPreview";
 import { WIDTH, HEIGHT } from "./scene";
 import {
-  ALL_ICON_TYPES,
-  ICON_LABELS,
   LAT,
   LON,
+  WEATHER_CODES,
   WEATHER_DESCRIPTIONS,
   buildForecast,
   fetchWeather,
@@ -66,7 +65,7 @@ export default async function Home() {
           display: "flex",
           flexDirection: "column",
           gap: 24,
-          width: 260,
+          width: 360,
         }}
       >
         <aside
@@ -172,11 +171,11 @@ export default async function Home() {
         >
           <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>All conditions</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {ALL_ICON_TYPES.map((type) => (
+            {WEATHER_CODES.map((code) => (
               <WeatherIconPreview
-                key={type}
-                type={type}
-                label={ICON_LABELS[type]}
+                key={code}
+                code={code}
+                label={WEATHER_DESCRIPTIONS[code] ?? `Code ${code}`}
               />
             ))}
           </div>

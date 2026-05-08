@@ -23,7 +23,7 @@ let atlasPromise: ReturnType<typeof loadImage> | null = null;
 function loadAtlas() {
   if (!atlasPromise) {
     atlasPromise = loadImage(
-      path.join(process.cwd(), "public/weather-icons.png"),
+      path.join(process.cwd(), "public/27-weather-icons.png"),
     );
   }
   return atlasPromise;

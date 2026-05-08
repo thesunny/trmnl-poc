@@ -1,8 +1,4 @@
-import {
-  weatherCodeToIcon,
-  type ForecastDay,
-  type IconType,
-} from "./weather";
+import { WEATHER_CODES, type ForecastDay } from "./weather";
 
 export const WIDTH = 800;
 export const HEIGHT = 480;
@@ -12,21 +8,16 @@ const DARK_GRAY = "#555555";
 const LIGHT_GRAY = "#aaaaaa";
 const WHITE = "#ffffff";
 
-export const ICON_ATLAS_URL = "/weather-icons.png";
-const ATLAS_PX = 1254;
-const ATLAS_CELLS = 3;
-const CELL_PX = ATLAS_PX / ATLAS_CELLS;
-const CELL_INSET_FRACTION = 0.04; // crop a few pixels inward to skip divider lines
+export const ICON_ATLAS_URL = "/27-weather-icons.png";
 
-const ICON_GRID: Record<IconType, { col: number; row: number }> = {
-  sun: { col: 0, row: 0 },
-  "partly-cloudy": { col: 1, row: 0 },
-  cloud: { col: 2, row: 0 },
-  rain: { col: 0, row: 1 },
-  snow: { col: 1, row: 1 },
-  thunderstorm: { col: 2, row: 1 },
-  fog: { col: 0, row: 2 },
-};
+// Tunable atlas-extraction parameters. Adjust to taste.
+export const ATLAS_START_X = 17;
+export const ATLAS_START_Y = 17;
+export const ATLAS_ICON_WIDTH = 180;
+export const ATLAS_ICON_HEIGHT = 180;
+export const ATLAS_X_GAP = 28;
+export const ATLAS_Y_GAP = 70;
+const ATLAS_COLS = 6;
 
 export type SceneWeather = {
   temperature: number;
@@ -47,14 +38,7 @@ export function drawScene(
   const topCenterY = 120;
 
   if (weather) {
-    drawWeatherIcon(
-      ctx,
-      185,
-      140,
-      240,
-      weatherCodeToIcon(weather.code),
-      atlas,
-    );
+    drawWeatherIcon(ctx, 185, 140, 240, weather.code, atlas);
     drawTemperature(ctx, 600, 170, weather.temperature);
 
     ctx.fillStyle = DARK_GRAY;
@@ -104,14 +88,7 @@ function drawForecastRow(
     ctx.font = "16px 'Atkinson Hyperlegible'";
     ctx.fillText(day.label, cx, labelY);
 
-    drawWeatherIcon(
-      ctx,
-      cx,
-      iconCenterY,
-      iconSize,
-      weatherCodeToIcon(day.code),
-      atlas,
-    );
+    drawWeatherIcon(ctx, cx, iconCenterY, iconSize, day.code, atlas);
 
     ctx.font = "20px 'Atkinson Hyperlegible'";
     ctx.fillText(
@@ -140,20 +117,21 @@ export function drawWeatherIcon(
   cx: number,
   cy: number,
   size: number,
-  type: IconType,
+  code: number,
   atlas: CanvasImageSource,
 ): void {
-  const { col, row } = ICON_GRID[type];
-  const inset = CELL_PX * CELL_INSET_FRACTION;
-  const sx = col * CELL_PX + inset;
-  const sy = row * CELL_PX + inset;
-  const sSide = CELL_PX - 2 * inset;
+  const index = WEATHER_CODES.indexOf(code);
+  if (index < 0) return;
+  const col = index % ATLAS_COLS;
+  const row = Math.floor(index / ATLAS_COLS);
+  const sx = ATLAS_START_X + col * (ATLAS_ICON_WIDTH + ATLAS_X_GAP);
+  const sy = ATLAS_START_Y + row * (ATLAS_ICON_HEIGHT + ATLAS_Y_GAP);
   ctx.drawImage(
     atlas,
     sx,
     sy,
-    sSide,
-    sSide,
+    ATLAS_ICON_WIDTH,
+    ATLAS_ICON_HEIGHT,
     cx - size / 2,
     cy - size / 2,
     size,
