@@ -63,15 +63,25 @@ export type ForecastDay = {
 };
 
 export function buildForecast(weather: WeatherResponse): ForecastDay[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
   const out: ForecastDay[] = [];
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 0; i < weather.daily.time.length; i++) {
     const dateStr = weather.daily.time[i];
     const [y, m, d] = dateStr.split("-").map(Number);
     const date = new Date(y, m - 1, d);
-    const label =
-      i === 1
-        ? "Tomorrow"
-        : date.toLocaleDateString("en-US", { weekday: "long" });
+
+    if (date < tomorrow) continue;
+    if (out.length >= 7) break;
+
+    const isTomorrow = date.getTime() === tomorrow.getTime();
+    const label = isTomorrow
+      ? "Tomorrow"
+      : date.toLocaleDateString("en-US", { weekday: "long" });
+
     out.push({
       label,
       code: weather.daily.weather_code[i],
@@ -89,7 +99,7 @@ export async function fetchWeather(): Promise<WeatherResponse | null> {
     current:
       "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m",
     daily: "temperature_2m_max,temperature_2m_min,weather_code",
-    forecast_days: "8",
+    forecast_days: "10",
     timezone: "auto",
   });
   try {
