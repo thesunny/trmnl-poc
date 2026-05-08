@@ -1,40 +1,38 @@
-# Welcome to your Convex + Next.js app
+# trmnl-poc
 
-This is a [Convex](https://convex.dev/) project created with [`npm create convex`](https://www.npmjs.com/package/create-convex).
+A small Next.js proof-of-concept for generating images suitable for a [TRMNL](https://usetrmnl.com) e-paper display: 800×480, true 2-bit (4-shade) grayscale PNGs.
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
+## What's here
 
-- Convex as your backend (database, server logic)
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [Next.js](https://nextjs.org/) for optimized web hosting and page routing
-- [Tailwind](https://tailwindcss.com/) for building great looking accessible UI
+- **`/image.png`** — a Route Handler that renders a "Planet and Moon" scene with `@napi-rs/canvas`, luminance-quantizes the output to 4 grayscale levels, and emits a true 2-bit PNG via a hand-rolled encoder. `Content-Type: image/png`, `Cache-Control: no-store`.
+- **`/`** — a comparison page showing the source canvas (rendered live in the browser at full color) above the quantized PNG, so you can eyeball the effect of the e-paper quantization.
 
-## Get started
+## How it works
 
-If you just cloned this codebase and didn't use `npm create convex`, run:
+- The scene-drawing code lives in `app/scene.ts` as a single `drawScene(ctx)` function. It uses standard `CanvasRenderingContext2D` calls so the same code drives both the server-side `@napi-rs/canvas` (for the PNG) and a real `<canvas>` element in the browser (for the live preview).
+- The 2-bit PNG encoder is in `app/image.png/route.ts`. It packs four pixels per byte and emits a minimal PNG (signature + IHDR + IDAT + IEND) — no external image library required.
+- Text uses [Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont) (Regular / Italic / Bold / BoldItalic), bundled in `public/fonts/`. The server registers the four cuts via `GlobalFonts.registerFromPath`; the browser registers them via the JS `FontFace` API (sidesteps a Tailwind v4 / Lightning CSS dedup of multiple `@font-face` blocks for the same family).
 
-```
-npm install
-npm run dev
-```
+## Run locally
 
-If you're reading this README on GitHub and want to use this template, run:
-
-```
-npm create convex@latest -- -t nextjs
+```sh
+pnpm install
+pnpm dev
 ```
 
-## Learn more
+Then open <http://localhost:3000/>.
 
-To learn more about developing your project with Convex, check out:
+## Deploying to Vercel
 
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
+Should work out of the box:
 
-## Join the community
+- `pnpm.supportedArchitectures` in `package.json` ensures the lockfile resolves `@napi-rs/canvas` bindings for both macOS dev and Linux x64/arm64 (glibc) Lambdas.
+- `serverExternalPackages: ["@napi-rs/canvas"]` in `next.config.ts` keeps Turbopack from bundling the package's dynamic native-binding loader.
+- `outputFileTracingIncludes` in `next.config.ts` ships the TTFs in `public/fonts/` into the `/image.png` Lambda.
 
-Join thousands of developers building full-stack apps with Convex:
+## Stack
 
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+- Next.js 16 (App Router, Turbopack)
+- `@napi-rs/canvas` (Skia-based Canvas2D for Node)
+- React 19, Tailwind v4
+- Convex is wired into the project but unused by this POC.
