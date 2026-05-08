@@ -67,10 +67,10 @@ export function drawScene(
   }
 
   ctx.strokeStyle = LIGHT_GRAY;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(10, 320);
-  ctx.lineTo(790, 320);
+  ctx.moveTo(20, 300);
+  ctx.lineTo(780, 300);
   ctx.stroke();
 }
 
