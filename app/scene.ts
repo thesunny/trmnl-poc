@@ -25,6 +25,8 @@ export type SceneWeather = {
   dailyMax: number;
   dailyMin: number;
   forecast: ForecastDay[];
+  todayDate: string;
+  trashDates: string[];
 };
 
 export function drawScene(
@@ -40,6 +42,10 @@ export function drawScene(
   if (weather) {
     drawWeatherIcon(ctx, 185, 140, 240, weather.code, atlas);
     drawTemperature(ctx, 600, 150, weather.temperature);
+
+    if (weather.trashDates.includes(weather.todayDate)) {
+      drawTrashIcon(ctx, 185, 275, 28);
+    }
 
     ctx.fillStyle = DARK_GRAY;
     ctx.font = "46px 'Atkinson Hyperlegible'";
@@ -63,19 +69,22 @@ export function drawScene(
   ctx.stroke();
 
   if (weather) {
-    drawForecastRow(ctx, weather.forecast, atlas);
+    drawForecastRow(ctx, weather.forecast, weather.trashDates, atlas);
   }
 }
 
 function drawForecastRow(
   ctx: CanvasRenderingContext2D,
   forecast: ForecastDay[],
+  trashDates: string[],
   atlas: CanvasImageSource,
 ): void {
   const colWidth = WIDTH / 7;
   const labelY = 325;
   const iconCenterY = 390;
   const iconSize = 70;
+  const trashCenterY = 432;
+  const trashSize = 14;
   const tempY = 450;
 
   ctx.fillStyle = BLACK;
@@ -90,6 +99,10 @@ function drawForecastRow(
 
     drawWeatherIcon(ctx, cx, iconCenterY, iconSize, day.code, atlas);
 
+    if (trashDates.includes(day.date)) {
+      drawTrashIcon(ctx, cx, trashCenterY, trashSize);
+    }
+
     ctx.font = "20px 'Atkinson Hyperlegible'";
     ctx.fillText(
       `${Math.round(day.min)}°—${Math.round(day.max)}°`,
@@ -97,6 +110,52 @@ function drawForecastRow(
       tempY,
     );
   });
+}
+
+// Lucide icons are 24x24-viewBox SVGs with stroke=2, round caps, round joins.
+// Pass the d attributes from each <path>/<line> as an array of SVG path
+// strings; this helper applies the standard transform and stroke style.
+//
+// Requires Path2D to be available as a global. The browser provides it; in
+// @napi-rs/canvas it's a named export, so the route handler exposes it on
+// globalThis at module load.
+export function drawLucideIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  paths: readonly string[],
+): void {
+  const scale = size / 24;
+  ctx.save();
+  ctx.translate(cx - size / 2, cy - size / 2);
+  ctx.scale(scale, scale);
+  ctx.strokeStyle = BLACK;
+  ctx.lineWidth = 1 / scale; // keep on-canvas stroke at ~1px regardless of icon size
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  for (const d of paths) {
+    ctx.stroke(new Path2D(d));
+  }
+  ctx.restore();
+}
+
+// https://lucide.dev/icons/trash-2
+const LUCIDE_TRASH_2 = [
+  "M3 6h18",
+  "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",
+  "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",
+  "M10 11v6",
+  "M14 11v6",
+];
+
+function drawTrashIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+): void {
+  drawLucideIcon(ctx, cx, cy, size, LUCIDE_TRASH_2);
 }
 
 function drawTemperature(

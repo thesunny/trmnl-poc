@@ -1,11 +1,26 @@
-import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
+import {
+  createCanvas,
+  GlobalFonts,
+  loadImage,
+  Path2D as NapiPath2D,
+} from "@napi-rs/canvas";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
 import { drawScene, WIDTH, HEIGHT } from "../scene";
 import { buildForecast, fetchWeatherFresh } from "../weather";
+import { fetchTrashDates } from "../calendar";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Make Path2D available as a global on the Node side so that shared scene
+// code can construct paths from SVG strings (e.g. for Lucide icons) without
+// caring whether it's running in the browser or in @napi-rs/canvas. The
+// browser already provides Path2D as a DOM global; this brings the Node
+// runtime to parity.
+if (typeof (globalThis as { Path2D?: unknown }).Path2D === "undefined") {
+  (globalThis as { Path2D: typeof NapiPath2D }).Path2D = NapiPath2D;
+}
 
 for (const file of [
   "AtkinsonHyperlegible-Regular.ttf",
@@ -30,9 +45,10 @@ function loadAtlas() {
 }
 
 async function renderPixels(): Promise<Uint8Array> {
-  const [weather, atlas] = await Promise.all([
+  const [weather, atlas, trashDates] = await Promise.all([
     fetchWeatherFresh(),
     loadAtlas(),
+    fetchTrashDates(),
   ]);
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext("2d");
@@ -45,6 +61,8 @@ async function renderPixels(): Promise<Uint8Array> {
           dailyMax: weather.daily.temperature_2m_max[0],
           dailyMin: weather.daily.temperature_2m_min[0],
           forecast: buildForecast(weather),
+          todayDate: weather.daily.time[0],
+          trashDates,
         }
       : undefined,
     atlas as unknown as CanvasImageSource,

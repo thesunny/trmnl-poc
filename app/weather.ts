@@ -57,6 +57,7 @@ export type WeatherResponse = {
 
 export type ForecastDay = {
   label: string;
+  date: string;
   code: number;
   min: number;
   max: number;
@@ -84,6 +85,7 @@ export function buildForecast(weather: WeatherResponse): ForecastDay[] {
 
     out.push({
       label,
+      date: dateStr,
       code: weather.daily.weather_code[i],
       min: weather.daily.temperature_2m_min[i],
       max: weather.daily.temperature_2m_max[i],

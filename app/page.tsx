@@ -9,6 +9,7 @@ import {
   buildForecast,
   fetchWeather,
 } from "./weather";
+import { fetchTrashDates } from "./calendar";
 
 function compass(deg: number): string {
   const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
@@ -16,7 +17,10 @@ function compass(deg: number): string {
 }
 
 export default async function Home() {
-  const weather = await fetchWeather();
+  const [weather, trashDates] = await Promise.all([
+    fetchWeather(),
+    fetchTrashDates(),
+  ]);
 
   return (
     <main
@@ -40,6 +44,8 @@ export default async function Home() {
                     dailyMax: weather.daily.temperature_2m_max[0],
                     dailyMin: weather.daily.temperature_2m_min[0],
                     forecast: buildForecast(weather),
+                    todayDate: weather.daily.time[0],
+                    trashDates,
                   }
                 : undefined
             }
