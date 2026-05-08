@@ -19,7 +19,8 @@ export const dynamic = "force-dynamic";
 // browser already provides Path2D as a DOM global; this brings the Node
 // runtime to parity.
 if (typeof (globalThis as { Path2D?: unknown }).Path2D === "undefined") {
-  (globalThis as { Path2D: typeof NapiPath2D }).Path2D = NapiPath2D;
+  (globalThis as unknown as { Path2D: typeof NapiPath2D }).Path2D =
+    NapiPath2D;
 }
 
 for (const file of [
