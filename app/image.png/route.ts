@@ -1,7 +1,8 @@
-import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
+import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
 import { deflateSync } from "node:zlib";
 import path from "node:path";
 import { drawScene, WIDTH, HEIGHT } from "../scene";
+import { fetchWeather } from "../weather";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,10 +19,30 @@ for (const file of [
   );
 }
 
-function renderPixels(): Uint8Array {
+let atlasPromise: ReturnType<typeof loadImage> | null = null;
+function loadAtlas() {
+  if (!atlasPromise) {
+    atlasPromise = loadImage(
+      path.join(process.cwd(), "public/weather-icons.png"),
+    );
+  }
+  return atlasPromise;
+}
+
+async function renderPixels(): Promise<Uint8Array> {
+  const [weather, atlas] = await Promise.all([fetchWeather(), loadAtlas()]);
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext("2d");
-  drawScene(ctx as unknown as CanvasRenderingContext2D);
+  drawScene(
+    ctx as unknown as CanvasRenderingContext2D,
+    weather
+      ? {
+          temperature: weather.current.temperature_2m,
+          code: weather.current.weather_code,
+        }
+      : undefined,
+    atlas as unknown as CanvasImageSource,
+  );
 
   const { data } = ctx.getImageData(0, 0, WIDTH, HEIGHT);
   const out = new Uint8Array(WIDTH * HEIGHT);
@@ -101,7 +122,7 @@ function encode2BitGrayPNG(
 }
 
 export async function GET() {
-  const pixels = renderPixels();
+  const pixels = await renderPixels();
   const png = encode2BitGrayPNG(WIDTH, HEIGHT, pixels);
   return new Response(new Uint8Array(png), {
     headers: {

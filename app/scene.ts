@@ -1,94 +1,96 @@
+import { weatherCodeToIcon, type IconType } from "./weather";
+
 export const WIDTH = 800;
 export const HEIGHT = 480;
 
 const BLACK = "#000000";
-const DARK = "#555555";
-const LIGHT = "#aaaaaa";
 const WHITE = "#ffffff";
 
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export const ICON_ATLAS_URL = "/weather-icons.png";
+const ATLAS_PX = 1254;
+const ATLAS_CELLS = 3;
+const CELL_PX = ATLAS_PX / ATLAS_CELLS;
+const CELL_INSET_FRACTION = 0.04; // crop a few pixels inward to skip divider lines
 
-export function drawScene(ctx: CanvasRenderingContext2D): void {
+const ICON_GRID: Record<IconType, { col: number; row: number }> = {
+  sun: { col: 0, row: 0 },
+  "partly-cloudy": { col: 1, row: 0 },
+  cloud: { col: 2, row: 0 },
+  rain: { col: 0, row: 1 },
+  snow: { col: 1, row: 1 },
+  thunderstorm: { col: 2, row: 1 },
+  fog: { col: 0, row: 2 },
+};
+
+export type SceneWeather = {
+  temperature: number;
+  code: number;
+};
+
+export function drawScene(
+  ctx: CanvasRenderingContext2D,
+  weather: SceneWeather | undefined,
+  atlas: CanvasImageSource,
+): void {
   ctx.fillStyle = WHITE;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-  const rand = mulberry32(0xc0ffee);
-  ctx.fillStyle = BLACK;
-  for (let i = 0; i < 60; i++) {
-    const x = Math.floor(rand() * WIDTH);
-    const y = Math.floor(rand() * HEIGHT);
-    ctx.fillRect(x, y, 2, 2);
+  const topCenterY = 120;
+
+  if (weather) {
+    drawWeatherIcon(
+      ctx,
+      130,
+      topCenterY,
+      200,
+      weatherCodeToIcon(weather.code),
+      atlas,
+    );
+    drawTemperature(ctx, 480, topCenterY, weather.temperature);
+  } else {
+    ctx.fillStyle = BLACK;
+    ctx.font = "20px 'Atkinson Hyperlegible'";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Weather unavailable", WIDTH / 2, topCenterY);
   }
+}
 
-  const cx = 360;
-  const cy = 240;
-  const orbitRx = 240;
-  const orbitRy = 210;
-
-  ctx.strokeStyle = LIGHT;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 6]);
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, orbitRx, orbitRy, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  const planetR = 130;
-  ctx.fillStyle = LIGHT;
-  ctx.beginPath();
-  ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.fillStyle = DARK;
-  ctx.beginPath();
-  ctx.arc(cx + 55, cy + 10, planetR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = WHITE;
-  ctx.beginPath();
-  ctx.arc(cx - 55, cy - 40, 28, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
-  const moonAngle = -0.7;
-  const moonX = cx + orbitRx * Math.cos(moonAngle);
-  const moonY = cy + orbitRy * Math.sin(moonAngle);
-  const moonR = 32;
-
-  ctx.fillStyle = LIGHT;
-  ctx.beginPath();
-  ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.fillStyle = DARK;
-  ctx.beginPath();
-  ctx.arc(moonX + 14, moonY + 4, moonR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
+function drawTemperature(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  value: number,
+): void {
   ctx.fillStyle = BLACK;
+  ctx.font = "bold 130px 'Atkinson Hyperlegible'";
   ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`${Math.round(value)}°`, cx, cy);
+}
 
-  ctx.font = "bold 34px 'Atkinson Hyperlegible'";
-  ctx.fillText("Planet and Moon", WIDTH / 2, HEIGHT - 60);
-
-  ctx.font = "20px 'Atkinson Hyperlegible'";
-  ctx.fillText("A celestial scene", WIDTH / 2, HEIGHT - 28);
+export function drawWeatherIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  type: IconType,
+  atlas: CanvasImageSource,
+): void {
+  const { col, row } = ICON_GRID[type];
+  const inset = CELL_PX * CELL_INSET_FRACTION;
+  const sx = col * CELL_PX + inset;
+  const sy = row * CELL_PX + inset;
+  const sSide = CELL_PX - 2 * inset;
+  ctx.drawImage(
+    atlas,
+    sx,
+    sy,
+    sSide,
+    sSide,
+    cx - size / 2,
+    cy - size / 2,
+    size,
+    size,
+  );
 }

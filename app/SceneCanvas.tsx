@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { drawScene, WIDTH, HEIGHT } from "./scene";
+import {
+  drawScene,
+  WIDTH,
+  HEIGHT,
+  ICON_ATLAS_URL,
+  type SceneWeather,
+} from "./scene";
 
 const FONT_FACES = [
   { weight: "400", style: "normal", file: "AtkinsonHyperlegible-Regular.ttf" },
@@ -14,7 +20,7 @@ const FONT_FACES = [
   },
 ];
 
-export function SceneCanvas() {
+export function SceneCanvas({ weather }: { weather?: SceneWeather }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -28,7 +34,12 @@ export function SceneCanvas() {
             style,
           }),
       );
-      await Promise.all(faces.map((f) => f.load()));
+      const atlas = new Image();
+      atlas.src = ICON_ATLAS_URL;
+      const [, ] = await Promise.all([
+        Promise.all(faces.map((f) => f.load())),
+        atlas.decode(),
+      ]);
       if (cancelled) return;
       faces.forEach((f) => document.fonts.add(f));
 
@@ -36,13 +47,13 @@ export function SceneCanvas() {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      drawScene(ctx);
+      drawScene(ctx, weather, atlas);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [weather]);
 
   return (
     <canvas
