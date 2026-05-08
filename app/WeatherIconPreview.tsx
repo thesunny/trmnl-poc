@@ -8,6 +8,9 @@ import {
   ATLAS_ICON_HEIGHT,
 } from "./scene";
 
+const PREVIEW_W = ATLAS_ICON_WIDTH / 2;
+const PREVIEW_H = ATLAS_ICON_HEIGHT / 2;
+
 export function WeatherIconPreview({
   code,
   label,
@@ -28,12 +31,12 @@ export function WeatherIconPreview({
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.clearRect(0, 0, ATLAS_ICON_WIDTH, ATLAS_ICON_HEIGHT);
+      ctx.clearRect(0, 0, PREVIEW_W, PREVIEW_H);
       drawWeatherIcon(
         ctx,
-        ATLAS_ICON_WIDTH / 2,
-        ATLAS_ICON_HEIGHT / 2,
-        ATLAS_ICON_WIDTH,
+        PREVIEW_W / 2,
+        PREVIEW_H / 2,
+        PREVIEW_W,
         code,
         atlas,
       );
@@ -44,14 +47,18 @@ export function WeatherIconPreview({
   }, [code]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <canvas
-        ref={ref}
-        width={ATLAS_ICON_WIDTH}
-        height={ATLAS_ICON_HEIGHT}
-        style={{ flexShrink: 0 }}
-      />
-      <span style={{ fontSize: 14 }}>{label}</span>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <canvas ref={ref} width={PREVIEW_W} height={PREVIEW_H} />
+      <span style={{ fontSize: 12, textAlign: "center", lineHeight: 1.2 }}>
+        {label}
+      </span>
     </div>
   );
 }
