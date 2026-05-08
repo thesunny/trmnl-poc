@@ -1,6 +1,6 @@
 import { SceneCanvas } from "./SceneCanvas";
 import { WeatherIconPreview } from "./WeatherIconPreview";
-import { ConditionsProvider } from "./ConditionsContext";
+import { ConditionsProvider, ResetOverrideButton } from "./ConditionsContext";
 import { WIDTH, HEIGHT } from "./scene";
 import {
   LAT,
@@ -177,7 +177,17 @@ export default async function Home() {
             borderRadius: 8,
           }}
         >
-          <h2 style={{ margin: "0 0 12px", fontSize: 18 }}>All conditions</h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              margin: "0 0 12px",
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: 18 }}>All conditions</h2>
+            <ResetOverrideButton />
+          </div>
           <div
             style={{
               display: "grid",

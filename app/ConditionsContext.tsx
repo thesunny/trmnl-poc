@@ -29,3 +29,26 @@ export function ConditionsProvider({ children }: { children: ReactNode }) {
 export function useConditions() {
   return useContext(ConditionsContext);
 }
+
+export function ResetOverrideButton() {
+  const { override, setOverride } = useConditions();
+  const active = override !== null;
+  return (
+    <button
+      type="button"
+      onClick={() => setOverride(null)}
+      disabled={!active}
+      style={{
+        fontSize: 12,
+        padding: "4px 10px",
+        border: "1px solid #ccc",
+        borderRadius: 4,
+        background: active ? "#fff" : "#f5f5f5",
+        color: active ? "#000" : "#999",
+        cursor: active ? "pointer" : "default",
+      }}
+    >
+      Reset
+    </button>
+  );
+}
